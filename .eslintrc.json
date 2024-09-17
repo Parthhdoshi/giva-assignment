@@ -12,7 +12,7 @@
     "no-unused-labels" :  "error",
     "no-console": "warn",
     // "no-magic-numbers" : "error",
-    "no-mixed-operators":"error"
-    // "no-var":"error"
+    "no-mixed-operators":"error",
+    "no-var":"error"
   }
 }
