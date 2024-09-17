@@ -1,101 +1,154 @@
-import Image from "next/image";
+"use client";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import ProductCard from "./components/ProductCard";
+import { Autocomplete, TextField } from "@mui/material";
+import Grid from "@mui/material/Grid2";
+import { motion } from "framer-motion";
+import { FaLessThan } from "react-icons/fa";
+import { FaGreaterThan } from "react-icons/fa";
+import Skeleton from "@mui/material/Skeleton";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [products, setProducts] = useState<any>([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true); 
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    let timeOut:any;
+    const fetchProducts = async () => {
+      setLoading(true);
+
+      timeOut = window.setTimeout(async ()=>{
+        try {
+          const { data } = await axios.get("https://fakestoreapi.com/products");
+          setProducts(data);
+          setFilteredProducts(data);
+        } catch (error) {
+        } finally {
+          setLoading(false); 
+        }
+      },3000);
+    
+    };
+    fetchProducts();
+
+    return() => {
+      clearTimeout(timeOut);
+    };
+
+  }, []);
+
+  const filterByCategory = (category: string) => {
+    const filtered = products.filter(
+      (product: any) => product.category === category
+    );
+    setFilteredProducts(filtered);
+  };
+
+  const sortByPrice = (order: any) => {
+    const sorted = [...filteredProducts].sort((a: any, b: any) =>
+      order === "asc" ? a.price - b.price : b.price - a.price
+    );
+    setFilteredProducts(sorted);
+  };
+
+  const paginateProducts = filteredProducts.slice(
+    (currentPage - 1) * 10,
+    currentPage * 10
+  );
+
+  const categories = [
+    { label: "Men's Clothing", value: "men's clothing" },
+    { label: "Women's Clothing", value: "women's clothing" },
+    { label: "Electronics", value: "electronics" },
+    { label: "Jewelery", value: "jewelery" },
+  ];
+
+  const sortByPriceList = [
+    { value: "asc", label: "Price: Low to High" },
+    { value: "desc", label: "Price: High to Low" },
+  ];
+
+  return (
+    <div className="container mx-auto">
+      <Grid container spacing={2} className="m-3 ">
+        <Grid size={{ xs: 3, md: 3 }}>
+          <Autocomplete
+            disablePortal
+            options={categories}
+            fullWidth
+            size="small"
+            onChange={(event, newValue: any) => {
+              filterByCategory(newValue?.value);
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Please Select Categories" />
+            )}
+          />
+        </Grid>
+        <Grid size={{ xs: 6, md: 6 }}>
+          <h1 className="text-3xl text-center">Product Listing</h1>
+        </Grid>
+        <Grid size={{ xs: 3, md: 3 }}>
+          <Autocomplete
+            disablePortal
+            options={sortByPriceList}
+            fullWidth
+            size="small"
+            onChange={(event, newValue: any) => {
+              sortByPrice(newValue?.value);
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Sort by Price" />
+            )}
+          />
+        </Grid>
+      </Grid>
+
+      {loading ? (
+       
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 m-3">
+                   
+          {Array(10).fill("").map((item,index) => (
+            <Skeleton variant="rounded" height={300} key={index}/>
+          ))}
+
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      ) : (
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 m-3">
+            {paginateProducts.map((product: any) => (
+              <motion.div whileHover={{ scale: 1.02 }} key={product.id}>
+                <ProductCard product={product} />
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="flex justify-center mb-4">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+              className="px-5"
+            >
+              {""}
+              <FaLessThan
+                className={`${
+                  currentPage === 1 ? "text-gray-500 cursor-not-allowed" : ""
+                }`}
+              />
+            </button>
+            <button
+              onClick={() => setCurrentPage((page) => page + 1)}
+              className="px-5"
+            >
+              {""}
+              <FaGreaterThan />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
