@@ -1,12 +1,11 @@
 import Link from "next/link";
 import AddCardButton from "./AddCardButton";
-import Image from "next/image";
 
 export default function ProductCard({ product }: any) {
   return (
     <div className="border p-4 rounded-md  text-center">
       <Link href={`/product/${product.id}`}>
-        <Image
+        <img
           src={product.image}
           alt={product.title}
           className="h-48 w-full object-contain"

@@ -2,7 +2,6 @@
 import { useRecoilState } from 'recoil';
 import cartStates from '../store/cartStates';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function Cart() {
   const [cart, setCart] = useRecoilState(cartStates);
@@ -28,7 +27,7 @@ export default function Cart() {
         <div>
           {cart.map((item:any) => (
             <div key={item.id} className="flex justify-between border p-4 mb-2 rounded-md">
-              <Image src={item.image} alt={item.title} className="h-10" />
+              <img src={item.image} alt={item.title} className="h-10" />
               <p>{item?.title}</p>
               <p>${item?.price}</p>
               <button
